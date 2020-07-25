@@ -1,0 +1,8 @@
+{
+  "twitter": {
+    "apiKey": "CHANGEME",
+    "apiSecret": "CHANGEME",
+    "accessToken": "CHANGEME",
+    "accessTokenSecret": "CHANGEME"
+  }
+}
