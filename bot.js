@@ -1,5 +1,7 @@
-/* global process */
+/* global __dirname, process */
 const config = require('./config.json')
+const fs = require('fs')
+const path = require('path')
 const Twitter = require('twitter-lite')
 
 const bot = new Twitter({
@@ -8,6 +10,12 @@ const bot = new Twitter({
   access_token_key: config.twitter.accessToken,
   access_token_secret: config.twitter.accessTokenSecret,
 })
+const blocklist = fs
+  .readFileSync(path.resolve(path.join(__dirname, './blocklist.txt')))
+  .toString()
+  .replace(/\s/g, '')
+  .split('\n')
+  .filter((s) => s.length > 0)
 
 const env = process.env.NODE_ENV
 const prod = env === 'production'
@@ -28,8 +36,6 @@ bot
   .stream('statuses/filter', streamParameters)
   .on('start', () => console.log('starting filtered status stream'))
   .on('data', async (tweet) => {
-    // remove the user object for cleaner output
-    delete tweet.user
     // normalize when truncated
     if (tweet.truncated) {
       tweet.text = tweet.extended_tweet.full_text
@@ -37,6 +43,14 @@ bot
       delete tweet.extended_tweet
     }
     switch (true) {
+      case Boolean(blocklist.includes(tweet.user.id_str)):
+        debug(
+          'filtered',
+          'user in blocklist',
+          tweet.user.screen_name,
+          tweet.user.id_str
+        )
+        return
       case Boolean(tweet.retweeted_status):
         debug('filtered', 'retweeted status')
         return
