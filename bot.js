@@ -4,6 +4,7 @@ const fs = require('fs')
 const parse = require('url-parse')
 const path = require('path')
 const Twitter = require('twitter-lite')
+const url_config = require('./url_config.json')
 
 const bot = new Twitter({
   consumer_key: config.twitter.apiKey,
@@ -80,13 +81,10 @@ const processStream = () => {
       }
       let urlMatch = false
       debug('checking urls')
+      const allowed_url_regexp = new RegExp(`(\.|^)(${url_config['allow_urls'].join('|')})`)
       for (let url of tweet.entities.urls) {
         debug('  ', url.expanded_url)
-        if (
-          parse(url.expanded_url).hostname.match(
-            /(\.|^)(github\.com|gitlab\.com|codepen\.io|codesandbox\.io|jsfiddle\.net|jsbin\.com|plnkr\.co|repl\.it|stackblitz\.com)/
-          )
-        ) {
+        if (parse(url.expanded_url).hostname.match(allowed_url_regexp)) {
           debug('good url')
           urlMatch = true
           break
