@@ -20,14 +20,15 @@ const debug = (...args) => {
   }
 }
 
-const params = {
+const streamParameters = {
   track: '#100DaysOfCode',
 }
 
 bot
-  .stream('statuses/filter', params)
+  .stream('statuses/filter', streamParameters)
   .on('start', () => console.log('starting filtered status stream'))
   .on('data', async (tweet) => {
+    // remove the user object for cleaner output
     delete tweet.user
     // normalize when truncated
     if (tweet.truncated) {
