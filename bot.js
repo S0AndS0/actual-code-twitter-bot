@@ -1,6 +1,7 @@
 /* global __dirname, process */
 const config = require('./config.json')
 const fs = require('fs')
+const parse = require('url-parse')
 const path = require('path')
 const Twitter = require('twitter-lite')
 
@@ -81,8 +82,8 @@ bot
     for (let url of tweet.entities.urls) {
       debug('  ', url.expanded_url)
       if (
-        url.expanded_url.match(
-          /(github\.com|gitlab\.com|codepen\.io|codesandbox\.io|jsfiddle\.net|jsbin\.com|plnkr\.co|repl\.it|stackblitz\.com)/
+        parse(url.expanded_url).hostname.match(
+          /(\.|^)(github\.com|gitlab\.com|codepen\.io|codesandbox\.io|jsfiddle\.net|jsbin\.com|plnkr\.co|repl\.it|stackblitz\.com)/
         )
       ) {
         debug('good url')

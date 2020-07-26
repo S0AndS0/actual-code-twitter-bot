@@ -5,7 +5,8 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "twitter-lite": "^0.14.0"
+    "twitter-lite": "^0.14.0",
+    "url-parse": "^1.4.7"
   },
   "devDependencies": {
     "eslint": "^7.5.0",
