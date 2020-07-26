@@ -45,7 +45,7 @@ bot
     tweet.entities = JSON.stringify(tweet.entities, undefined, 2)
     console.debug('retweeting', tweet)
     try {
-      await bot.post(`statuses/retweet/${tweet.id_str}.json`)
+      await bot.post(`statuses/retweet/${tweet.id_str}`)
     } catch (e) {
       console.error('error')
       console.debug(e)
