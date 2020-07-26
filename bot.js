@@ -1,3 +1,4 @@
+/* global process */
 const config = require('./config.json')
 const Twitter = require('twitter-lite')
 
@@ -7,6 +8,11 @@ const bot = new Twitter({
   access_token_key: config.twitter.accessToken,
   access_token_secret: config.twitter.accessTokenSecret,
 })
+
+const env = process.env.NODE_ENV
+const prod = env === 'production'
+const mode = prod ? env : 'development'
+console.log(`running in ${mode} mode`)
 
 const params = {
   track: '#100DaysOfCode',
@@ -30,10 +36,11 @@ bot
       case Boolean(tweet.in_reply_to_user_id_str):
       case Boolean(tweet.possibly_sensitive):
       case Boolean(!tweet.entities.urls.length):
+      case Boolean(!tweet.text.match(/^RT /g)):
         return
     }
     for (let url of tweet.entities.urls) {
-      console.debug(url.expanded_url)
+      console.log('checking url', url.expanded_url)
       if (
         !url.expanded_url.match(
           /(github\.com|gitlab\.com|codepen\.io|codesandbox\.io|jsfiddle\.net|jsbin\.com|plnkr\.co|repl\.it|stackblitz\.com)/
@@ -43,12 +50,16 @@ bot
       }
     }
     tweet.entities = JSON.stringify(tweet.entities, undefined, 2)
-    console.debug('retweeting', tweet)
     try {
-      await bot.post(`statuses/retweet/${tweet.id_str}`)
+      if (prod) {
+        console.log('retweeting', tweet)
+        await bot.post(`statuses/retweet/${tweet.id_str}`)
+      } else {
+        console.debug('debug', tweet)
+      }
     } catch (e) {
       console.error('error')
-      console.debug(e)
+      console.error(e)
       if ('errors' in e) {
         if (e.errors[0].code === 88) {
           // rate limit exceeded
