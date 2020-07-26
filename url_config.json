@@ -1,0 +1,13 @@
+{
+  "allow_urls": [
+    "github.com",
+    "gitlab.com",
+    "codepen.io",
+    "codesandbox.io",
+    "jsfiddle.net",
+    "jsbin.com",
+    "plnkr.co",
+    "repl.it",
+    "stackblitz.com"
+  ]
+}
