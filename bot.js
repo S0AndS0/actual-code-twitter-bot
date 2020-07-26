@@ -50,14 +50,13 @@ bot
       console.error('error')
       console.debug(e)
       if ('errors' in e) {
-        console.debug(e.errors)
-      }
-      if (e.errors[0].code === 88) {
-        // rate limit exceeded
-        console.log(
-          'Rate limit will reset on',
-          new Date(e._headers.get('x-rate-limit-reset') * 1000)
-        )
+        if (e.errors[0].code === 88) {
+          // rate limit exceeded
+          console.log(
+            'Rate limit will reset on',
+            new Date(e._headers.get('x-rate-limit-reset') * 1000)
+          )
+        }
       }
     }
   })
