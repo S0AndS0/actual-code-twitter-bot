@@ -14,13 +14,19 @@ const prod = env === 'production'
 const mode = prod ? env : 'development'
 console.log(`running in ${mode} mode`)
 
+const debug = (...args) => {
+  if (!prod) {
+    console.debug(...args)
+  }
+}
+
 const params = {
   track: '#100DaysOfCode',
 }
 
 bot
   .stream('statuses/filter', params)
-  .on('start', () => console.log('start'))
+  .on('start', () => console.log('starting filtered status stream'))
   .on('data', async (tweet) => {
     delete tweet.user
     // normalize when truncated
@@ -31,23 +37,47 @@ bot
     }
     switch (true) {
       case Boolean(tweet.retweeted_status):
+        debug('filtered', 'retweeted status')
+        return
+      case Boolean(tweet.retweeted):
+        debug('filtered', 'already retweeted')
+        return
       case Boolean(tweet.quoted_status):
+        debug('filtered', 'quoted status')
+        return
       case Boolean(tweet.in_reply_to_status_id_str):
+        debug('filtered', 'in reply to status')
+        return
       case Boolean(tweet.in_reply_to_user_id_str):
+        debug('filtered', 'in reply to user')
+        return
+      case Boolean(tweet.text.match(/^RT /g)):
+        debug('filtered', 'tweet begins with RT')
+        return
       case Boolean(tweet.possibly_sensitive):
+        debug('filtered', 'possibly sensitive')
+        return
       case Boolean(!tweet.entities.urls.length):
-      case Boolean(!tweet.text.match(/^RT /g)):
+        debug('filtered', 'no urls')
         return
     }
+    let urlMatch = false
+    debug('checking urls')
     for (let url of tweet.entities.urls) {
-      console.log('checking url', url.expanded_url)
+      debug('  ', url.expanded_url)
       if (
-        !url.expanded_url.match(
+        url.expanded_url.match(
           /(github\.com|gitlab\.com|codepen\.io|codesandbox\.io|jsfiddle\.net|jsbin\.com|plnkr\.co|repl\.it|stackblitz\.com)/
         )
       ) {
-        return
+        debug('good url')
+        urlMatch = true
+        break
       }
+    }
+    if (!urlMatch) {
+      debug('filtered', 'no matching urls')
+      return
     }
     tweet.entities = JSON.stringify(tweet.entities, undefined, 2)
     try {
@@ -55,7 +85,7 @@ bot
         console.log('retweeting', tweet)
         await bot.post(`statuses/retweet/${tweet.id_str}`)
       } else {
-        console.debug('debug', tweet)
+        debug('good tweet', tweet)
       }
     } catch (e) {
       console.error('error')
@@ -71,6 +101,6 @@ bot
       }
     }
   })
-  .on('ping', () => console.log('ping'))
-  .on('error', (error) => console.log('error', error))
-  .on('end', () => console.log('end'))
+  .on('ping', () => debug('ping received from stream'))
+  .on('error', (error) => console.error('error received from sream', error))
+  .on('end', () => console.log('stream ended'))
