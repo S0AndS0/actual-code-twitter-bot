@@ -81,7 +81,8 @@ const processStream = () => {
       }
       let urlMatch = false
       debug('checking urls')
-      const allowed_url_regexp = new RegExp(`(\.|^)(${url_config['allow_urls'].join('|')})`)
+      const allowed_urls = url_config['allow_urls'].join('|').replace(/\./g, '\\.')
+      const allowed_url_regexp = new RegExp(`(\.|^)(${allowed_urls})`)
       for (let url of tweet.entities.urls) {
         debug('  ', url.expanded_url)
         if (parse(url.expanded_url).hostname.match(allowed_url_regexp)) {
